@@ -8,6 +8,10 @@ import AddIncome from "../pages/AddIncome";
 import AddExpence from "../pages/AddExpence";
 import Transition from "../pages/Transition";
 import Categories from "../pages/Categories"
+import EditClient from "../pages/EditClient";
+import AddEmploye from "../pages/AddEmploye";
+import Settings from "../pages/Settings";
+
 export default [
   {
     path: "/",
@@ -37,6 +41,28 @@ export default [
         <SideBar />
         <div style={{ marginLeft: "250px", padding: "20px" }}>
           <AddClient />
+        </div>
+      </>
+    ),
+  },
+    {
+    path: "/EditClient/:id",
+    element: (
+      <>
+        <SideBar />
+        <div style={{ marginLeft: "250px", padding: "20px" }}>
+          <EditClient />
+        </div>
+      </>
+    ),
+  },
+   {
+    path: "/AddEmploye",
+    element: (
+      <>
+        <SideBar />
+        <div style={{ marginLeft: "250px", padding: "20px" }}>
+          <AddEmploye />
         </div>
       </>
     ),
@@ -81,6 +107,17 @@ export default [
         <SideBar />
         <div style={{ marginLeft: "250px", padding: "20px" }}>
           <Categories />
+        </div>
+      </>
+    ),
+  },
+   {
+    path: "/Settings",
+    element: (
+      <>
+        <SideBar />
+        <div style={{ marginLeft: "250px", padding: "20px" }}>
+          <Settings />
         </div>
       </>
     ),

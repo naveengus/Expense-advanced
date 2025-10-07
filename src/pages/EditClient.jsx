@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
 import AxiosService from "../utils/AxiosService";
 import ApiRoutes from "../utils/ApiRoutes";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-function AddClient() {
+function EditClient() {
   const navigate = useNavigate();
+  const { id } = useParams();
+
   const [formData, setFormData] = useState({
     clientName: "",
     projectName: "",
@@ -14,16 +16,37 @@ function AddClient() {
     notes: "",
     totalAmount: "",
     givenAmount: "",
+    balance: "",
     startDate: "",
     endDate: "",
   });
 
+  // Fetch client details
+  useEffect(() => {
+    const fetchClient = async () => {
+      try {
+        const res = await AxiosService.get(
+          ApiRoutes.GETCLIENTBYID.Path.replace(":id", id),
+          { authenticate: true }
+        );
+        setFormData({
+          ...res,
+          startDate: res.startDate?.split("T")[0] || "",
+          endDate: res.endDate?.split("T")[0] || "",
+        });
+      } catch (error) {
+        console.error("Error fetching client:", error);
+        alert("Failed to fetch client data");
+      }
+    };
+    if (id) fetchClient();
+  }, [id]);
+
+  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     let updatedData = { ...formData, [name]: value };
 
-    // Auto-calculate balance if totalAmount or givenAmount changes
     if (name === "totalAmount" || name === "givenAmount") {
       const total = parseFloat(
         name === "totalAmount" ? value : updatedData.totalAmount
@@ -37,22 +60,22 @@ function AddClient() {
     setFormData(updatedData);
   };
 
+  // Submit updated client
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await AxiosService.post(
-        ApiRoutes.CREATECLIENT.Path,
+      await AxiosService.put(
+        ApiRoutes.UPDATECLIENT.Path.replace(":id", id),
         formData,
         { authenticate: true }
       );
-      console.log(res)
-      alert(res.message || "Client added successfully");
+      alert("Client updated successfully");
       navigate("/Dashboard");
     } catch (error) {
-      console.error(error);
-      alert(error.response?.message || "Internal Server Error");
+      console.error("Error updating client:", error);
+      alert(error.response?.data?.message || "Internal Server Error");
     }
-  };  
+  };
 
   return (
     <Container fluid className="d-flex justify-content-center align-items-center vh-60 bg-light">
@@ -60,20 +83,9 @@ function AddClient() {
         <Col xs={10} sm={8} md={6} lg={8}>
           <Card className="shadow-lg border-0 rounded-4">
             <Card.Body className="p-4">
-              <h3
-  className="text-center mb-4 fw-bold"
-  style={{
-    background: "linear-gradient(180deg, #ff7409 0%, #ff9f43 90%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-  }}
->
-  Add Client 
-</h3>
-
-
+              <h3 className="text-center mb-4 fw-bold text-primary">Edit Client ✏️</h3>
               <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formClientName" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Client Name</Form.Label>
                   <Form.Control
                     type="text"
@@ -85,7 +97,7 @@ function AddClient() {
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formProjectName" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Project Name</Form.Label>
                   <Form.Control
                     type="text"
@@ -97,7 +109,7 @@ function AddClient() {
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formClientNumber" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Client Number</Form.Label>
                   <Form.Control
                     type="text"
@@ -109,7 +121,7 @@ function AddClient() {
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formClientEmail" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Email</Form.Label>
                   <Form.Control
                     type="email"
@@ -120,7 +132,7 @@ function AddClient() {
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formTotalAmount" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Total Amount</Form.Label>
                   <Form.Control
                     type="number"
@@ -132,7 +144,7 @@ function AddClient() {
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formGivenAmount" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Given Amount</Form.Label>
                   <Form.Control
                     type="number"
@@ -143,18 +155,7 @@ function AddClient() {
                   />
                 </Form.Group>
 
-                {/* <Form.Group controlId="formBalance" className="mb-3">
-                  <Form.Label>Pending Amount</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="balance"
-                    value={formData.balance}
-                    readOnly
-                    placeholder="Pending amount will auto-calculate"
-                  />
-                </Form.Group> */}
-
-                <Form.Group controlId="formStartDate" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Start Date</Form.Label>
                   <Form.Control
                     type="date"
@@ -165,7 +166,7 @@ function AddClient() {
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formEndDate" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>End Date</Form.Label>
                   <Form.Control
                     type="date"
@@ -176,7 +177,7 @@ function AddClient() {
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formNotes" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Project Description</Form.Label>
                   <Form.Control
                     as="textarea"
@@ -189,7 +190,7 @@ function AddClient() {
                 </Form.Group>
 
                 <Button variant="primary" type="submit" className="w-100 rounded-pill">
-                  Add Client
+                  Update Client
                 </Button>
               </Form>
             </Card.Body>
@@ -200,4 +201,4 @@ function AddClient() {
   );
 }
 
-export default AddClient;
+export default EditClient;

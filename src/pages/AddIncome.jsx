@@ -54,7 +54,12 @@ function AddIncome() {
         <Col xs={12} md={5}>
           <Card className="shadow-lg border-0 rounded-4 mb-4">
             <Card.Body className="p-4">
-              <h3 className="text-center mb-4 fw-bold text-primary">Add Income 💰</h3>
+              <h3  className="text-center mb-4 fw-bold"
+  style={{
+    background: "linear-gradient(180deg, #ff7409 0%, #ff9f43 90%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  }}>Add Income 💰</h3>
               <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="formAmount" className="mb-3">
                   <Form.Label>Amount</Form.Label>
@@ -131,7 +136,12 @@ function AddIncome() {
         <Col xs={12} md={7}>
           <Card className="shadow-lg border-0 rounded-4 mb-4">
             <Card.Body>
-              <h3 className="text-center mb-4 fw-bold text-primary">Clients Overview 🗂️</h3>
+              <h3  className="text-center mb-4 fw-bold"
+  style={{
+    background: "linear-gradient(180deg, #ff7409 0%, #ff9f43 90%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  }}>Clients Overview 🗂️</h3>
               <Table striped bordered hover responsive>
                 <thead>
                   <tr>

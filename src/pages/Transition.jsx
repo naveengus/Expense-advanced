@@ -46,9 +46,32 @@ function Transition() {
 
   const displayed = filtered.filter((item) => item.type === view);
 
+  // Delete handler
+  const handleDelete = async (id, type) => {
+    if (window.confirm("Are you sure you want to delete this transaction?")) {
+      try {
+        if (type === "income") {
+          await AxiosService.delete(`${ApiRoutes.DELETEINCOME.Path}/${id}`, { authenticate: true });
+        } else {
+          await AxiosService.delete(`${ApiRoutes.DELETEEXPENSE.Path}/${id}`, { authenticate: true });
+        }
+        alert(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully`);
+        getData();
+      } catch (error) {
+        console.error(error);
+        alert(error.response?.data?.message || "Internal Server Error");
+      }
+    }
+  };
+
   return (
     <Container className="py-4">
-      <h2 className="text-center mb-4">Transactions</h2>
+      <h2  className="text-center mb-4 fw-bold"
+  style={{
+    background: "linear-gradient(180deg, #ff7409 0%, #ff9f43 90%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  }}>Transactions</h2>
 
       {/* Totals */}
       <Row className="mb-3">
@@ -118,6 +141,7 @@ function Transition() {
               <th>Amount</th>
               <th>Date</th>
               <th>Notes</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -125,14 +149,23 @@ function Transition() {
               <tr key={item._id}>
                 <td>{index + 1}</td>
                 <td>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</td>
-                <td>{item.clientName}</td>
-                <td>{item.projectName}</td>
-                <td>{item.category}</td>
+                <td>{item.clientName || "-"}</td>
+                <td>{item.projectName || "-"}</td>
+                <td>{item.category || "-"}</td>
                 <td className={item.type === "income" ? "text-success" : "text-danger"}>
                   {item.amount}
                 </td>
                 <td>{new Date(item.date).toLocaleDateString("en-GB")}</td>
-                <td>{item.notes}</td>
+                <td>{item.notes || "-"}</td>
+                <td>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleDelete(item._id, item.type)}
+                  >
+                    Delete
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>

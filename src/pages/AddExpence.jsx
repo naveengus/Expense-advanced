@@ -1,78 +1,98 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
 import AxiosService from "../utils/AxiosService";
 import ApiRoutes from "../utils/ApiRoutes";
 
-function AddExpence() {
-  const navigate = useNavigate();
-
+function AddExpense() {
+  const [toggleType, setToggleType] = useState("client"); // "client" or "employee"
   const [clients, setClients] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [formData, setFormData] = useState({
     clientName: "",
     projectName: "",
+    employeName: "",
     amount: "",
     date: "",
     category: "",
     notes: "",
   });
 
+  // Fetch clients and employees
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const clientsRes = await AxiosService.get(ApiRoutes.GETCLIENT.Path, { authenticate: true });
+        setClients(clientsRes || []);
+        const empRes = await AxiosService.get(ApiRoutes.GETEMPLOYES.Path, { authenticate: true });
+        setEmployees(empRes || []);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchData();
+  }, []);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Fetch clients
-  useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const res = await AxiosService.get(ApiRoutes.GETCLIENT.Path, {
-          authenticate: true,
-        });
-        setClients(res || []);
-      } catch (error) {
-        console.error("Error fetching clients:", error);
-        alert("Error fetching clients");
-      }
-    };
-    fetchClients();
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await AxiosService.post(
-        ApiRoutes.EXPENSECREATE.Path,
-        formData,
-        { authenticate: true }
-      );
-      alert(res.message || "Expense added successfully");
-      navigate("/Dashboard");
+      await AxiosService.post(ApiRoutes.EXPENSECREATE.Path, formData, { authenticate: true });
+      alert("Expense added successfully");
+      setFormData({
+        clientName: "",
+        projectName: "",
+        employeName: "",
+        amount: "",
+        date: "",
+        category: "",
+        notes: "",
+      });
     } catch (error) {
       console.error(error);
       alert(error.response?.data?.message || "Internal Server Error");
     }
   };
 
-  // Filter projects for selected client
-  const projectsForClient = clients
-    .filter((c) => c.clientName === formData.clientName)
-    .map((c) => c.projectName);
-
   return (
-    <Container
-      fluid
-      className="d-flex justify-content-center align-items-start bg-light py-5"
-    >
-      <Row className="w-100 justify-content-center">
-        <Col xs={10} sm={8} md={6} lg={4}>
-          <Card className="shadow-lg border-0 rounded-4">
+    <Container className="py-5">
+      <Row className="justify-content-center">
+        <Col xs={12} md={6}>
+          <Card className="shadow-lg rounded-4">
             <Card.Body className="p-4">
-              <h3 className="text-center mb-4 fw-bold text-primary">
+              <h3  className="text-center mb-4 fw-bold"
+  style={{
+    background: "linear-gradient(180deg, #ff7409 0%, #ff9f43 90%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  }}>
                 Add Expense 💸
               </h3>
 
+              {/* Toggle between Client / Employee */}
+              <Form.Group className="mb-4">
+                <Form.Check
+                  inline
+                  label="Client Expense"
+                  name="toggleType"
+                  type="radio"
+                  checked={toggleType === "client"}
+                  onChange={() => setToggleType("client")}
+                />
+                <Form.Check
+                  inline
+                  label="Employee Expense"
+                  name="toggleType"
+                  type="radio"
+                  checked={toggleType === "employee"}
+                  onChange={() => setToggleType("employee")}
+                />
+              </Form.Group>
+
               <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formAmount" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Amount</Form.Label>
                   <Form.Control
                     type="number"
@@ -84,43 +104,67 @@ function AddExpence() {
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formClientName" className="mb-3">
-                  <Form.Label>Client Name</Form.Label>
-                  <Form.Select
-                    name="clientName"
-                    value={formData.clientName}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select client</option>
-                    {clients.map((client) => (
-                      <option key={client._id} value={client.clientName}>
-                        {client.clientName}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
+                {toggleType === "client" && (
+                  <>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Client Name</Form.Label>
+                      <Form.Select
+                        name="clientName"
+                        value={formData.clientName}
+                        onChange={handleChange}
+                        required
+                      >
+                        <option value="">Select client</option>
+                        {clients.map((c) => (
+                          <option key={c._id} value={c.clientName}>
+                            {c.clientName}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
 
-                <Form.Group controlId="formProjectName" className="mb-3">
-                  <Form.Label>Project Name</Form.Label>
-                  <Form.Select
-                    name="projectName"
-                    value={formData.projectName}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select project</option>
-                    {clients
-                      // .filter((c) => c.clientName === formData.clientName)
-                      .map((client) => (
-                        <option key={client._id} value={client.projectName}>
-                          {client.projectName}
+                    <Form.Group className="mb-3">
+                      <Form.Label>Project Name</Form.Label>
+                      <Form.Select
+                        name="projectName"
+                        value={formData.projectName}
+                        onChange={handleChange}
+                        disabled={!formData.clientName}
+                        required
+                      >
+                        <option value="">Select project</option>
+                        {clients
+                          .filter((c) => c.clientName === formData.clientName)
+                          .map((c) => (
+                            <option key={c._id} value={c.projectName}>
+                              {c.projectName}
+                            </option>
+                          ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </>
+                )}
+
+                {toggleType === "employee" && (
+                  <Form.Group className="mb-3">
+                    <Form.Label>Employee Name</Form.Label>
+                    <Form.Select
+                      name="employeName"
+                      value={formData.employeName}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select employee</option>
+                      {employees.map((e) => (
+                        <option key={e._id} value={e.EmployeName}>
+                          {e.EmployeName}
                         </option>
                       ))}
-                  </Form.Select>
-                </Form.Group>
+                    </Form.Select>
+                  </Form.Group>
+                )}
 
-                <Form.Group controlId="formCategory" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Category</Form.Label>
                   <Form.Select
                     name="category"
@@ -135,7 +179,7 @@ function AddExpence() {
                   </Form.Select>
                 </Form.Group>
 
-                <Form.Group controlId="formDate" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Date</Form.Label>
                   <Form.Control
                     type="date"
@@ -146,7 +190,7 @@ function AddExpence() {
                   />
                 </Form.Group>
 
-                <Form.Group controlId="formNotes" className="mb-3">
+                <Form.Group className="mb-3">
                   <Form.Label>Notes</Form.Label>
                   <Form.Control
                     as="textarea"
@@ -158,11 +202,7 @@ function AddExpence() {
                   />
                 </Form.Group>
 
-                <Button
-                  variant="primary"
-                  type="submit"
-                  className="w-100 rounded-pill"
-                >
+                <Button type="submit" className="w-100 rounded-pill" variant="primary">
                   Add Expense
                 </Button>
               </Form>
@@ -174,4 +214,4 @@ function AddExpence() {
   );
 }
 
-export default AddExpence;
+export default AddExpense;

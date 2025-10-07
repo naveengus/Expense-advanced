@@ -6,17 +6,16 @@ import ApiRoutes from "../utils/ApiRoutes";
 
 function Dashboard() {
   const [clients, setClients] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [income, setIncome] = useState([]);
+  const [employes, setEmployes] = useState([]);
   const navigate = useNavigate();
 
+  // 🔹 Fetch Clients
   const getClientsData = async () => {
     try {
-      const res = await AxiosService.get(ApiRoutes.GETCLIENT.Path, {
-        authenticate: true,
-      });
-      const sortedClients = res.sort(
-        (a, b) => new Date(a.endDate) - new Date(b.endDate)
-      );
-      console.log(sortedClients)
+      const res = await AxiosService.get(ApiRoutes.GETCLIENT.Path, { authenticate: true });
+      const sortedClients = res.sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
       setClients(sortedClients);
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -24,33 +23,113 @@ function Dashboard() {
     }
   };
 
+  // 🔹 Fetch Expenses
+  const getExpensesData = async () => {
+    try {
+      const res = await AxiosService.get(ApiRoutes.GETEXPENSE.Path, { authenticate: true });
+      setExpenses(res);
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+      alert("Error fetching expenses");
+    }
+  };
+
+  // 🔹 Fetch Income
+  const getIncomeData = async () => {
+    try {
+      const res = await AxiosService.get(ApiRoutes.GETINCOME.Path, { authenticate: true });
+      setIncome(res);
+    } catch (error) {
+      console.error("Error fetching income:", error);
+      alert("Error fetching income");
+    }
+  };
+
+  // 🔹 Fetch Employes
+  const getEmployesData = async () => {
+    try {
+      const res = await AxiosService.get(ApiRoutes.GETEMPLOYES.Path, { authenticate: true });
+      setEmployes(res);
+    } catch (error) {
+      console.error("Error fetching employes:", error);
+      alert("Error fetching employes");
+    }
+  };
+
   useEffect(() => {
     getClientsData();
+    getExpensesData();
+    getIncomeData();
+    getEmployesData();
   }, []);
 
-  const handleEdit = (id) => {
-    navigate(`/edit-client/${id}`); // navigate to edit page
-  };
+  // 🔹 Edit / Delete
+  const handleEdit = (id) => navigate(`/EditClient/${id}`);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this client?")) return;
     try {
-      await AxiosService.delete(`${ApiRoutes.DELETECLIENT.Path}/${id}`, {
-        authenticate: true,
-      });
+      await AxiosService.delete(`${ApiRoutes.DELETECLIENT.Path}/${id}`, { authenticate: true });
       alert("Client deleted successfully");
-      getClientsData(); // refresh list
+      getClientsData();
     } catch (error) {
       console.error("Error deleting client:", error);
       alert(error.response?.data?.message || "Error deleting client");
     }
   };
 
+  // 🔹 Calculations
+  const totalAmount = clients.reduce((sum, c) => sum + Number(c.totalAmount || 0), 0);
+  const totalReceived = clients.reduce((sum, c) => sum + Number(c.givenAmount || 0), 0);
+  const totalPending = clients.reduce((sum, c) => sum + Number(c.balance || 0), 0);
+  const totalIncome = income.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+  const totalExpense = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const balance = totalIncome - totalExpense;
+
   return (
     <>
-      {/* Summary Cards */}
+      {/* 🌟 Top Row: Summary */}
       <Row className="mb-4">
-        <Col xs={6} md={3}>
+        <Col xs={12} md={3} className="mb-3">
+          <Card className="text-center shadow-sm border-0 bg-success text-white">
+            <Card.Body>
+              <Card.Title>Total Amount</Card.Title>
+              <Card.Text>₹ {totalAmount}</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col xs={12} md={3} className="mb-3">
+          <Card className="text-center shadow-sm border-0 bg-info text-white">
+            <Card.Body>
+              <Card.Title>Total Income</Card.Title>
+              <Card.Text>₹ {totalIncome}</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col xs={12} md={3} className="mb-3">
+          <Card className="text-center shadow-sm border-0 bg-danger text-white">
+            <Card.Body>
+              <Card.Title>Total Expense</Card.Title>
+              <Card.Text>₹ {totalExpense}</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col xs={12} md={3} className="mb-3">
+          <Card className="text-center shadow-sm border-0 bg-primary text-white">
+            <Card.Body>
+              <Card.Title>Balance</Card.Title>
+              <Card.Text>₹ {balance}</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 👥 Second Row: Client / Employer Summary */}
+      <Row className="mb-4">
+        <Col xs={6} md={3} className="mb-3">
           <Card className="text-center shadow-sm">
             <Card.Body>
               <Card.Title>Total Clients</Card.Title>
@@ -58,38 +137,42 @@ function Dashboard() {
             </Card.Body>
           </Card>
         </Col>
-        <Col xs={6} md={3}>
+
+        <Col xs={6} md={3} className="mb-3">
           <Card className="text-center shadow-sm">
             <Card.Body>
-              <Card.Title>Total Projects</Card.Title>
-              <Card.Text>{clients.length}</Card.Text>
+              <Card.Title>Total Employers</Card.Title>
+              <Card.Text>{employes.length}</Card.Text>
             </Card.Body>
           </Card>
         </Col>
-        <Col xs={6} md={3}>
+
+        <Col xs={6} md={3} className="mb-3">
           <Card className="text-center shadow-sm">
             <Card.Body>
               <Card.Title>Total Received</Card.Title>
-              <Card.Text>
-                ₹ {clients.reduce((sum, client) => sum + client.givenAmount, 0)}
-              </Card.Text>
+              <Card.Text>₹ {totalReceived}</Card.Text>
             </Card.Body>
           </Card>
         </Col>
-        <Col xs={6} md={3}>
+
+        <Col xs={6} md={3} className="mb-3">
           <Card className="text-center shadow-sm">
             <Card.Body>
               <Card.Title>Total Pending</Card.Title>
-              <Card.Text>
-                ₹ {clients.reduce((sum, client) => sum + client.balance, 0)}
-              </Card.Text>
+              <Card.Text>₹ {totalPending}</Card.Text>
             </Card.Body>
           </Card>
         </Col>
       </Row>
 
-      {/* Clients Table */}
-      <h5 className="mb-3">Clients Overview</h5>
+      {/* 📋 Clients Table */}
+      <h5  className="text-center mb-4 fw-bold"
+  style={{
+    background: "linear-gradient(180deg, #ff7409 0%, #ff9f43 90%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  }}>Clients Overview</h5>
       <Table striped bordered hover responsive>
         <thead>
           <tr>

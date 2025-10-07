@@ -1,21 +1,23 @@
 import React, { useState } from "react";
 import { Nav, Modal, Button } from "react-bootstrap";
 import { logout } from "../utils/LogOut";
+import { useNavigate } from "react-router-dom";
 
 function SideBar() {
-  const [show, setShow] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    setShow(false);
+    setShowLogout(false);
   };
 
   return (
     <div
-      className="d-flex flex-column bg-primary text-white vh-100 p-3"
-      style={{ width: "250px", position: "fixed" }}
+      className="d-flex flex-column  text-black vh-100 p-3"
+      style={{ width: "250px", position: "fixed",    background: "linear-gradient(180deg, #ff7409 0%, #ff9f43 90%)"
+ }}
     >
-      {/* Profile Section */}
       <div className="text-center mb-4">
         <img
           src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
@@ -26,49 +28,32 @@ function SideBar() {
         />
         <h5 className="fw-bold">Naveen</h5>
       </div>
+<Nav className="flex-column gap-2">
+  <Nav.Link href="/Dashboard" style={{ color: "#000" }}>Dashboard</Nav.Link>
+  <Nav.Link href="/AddClient" style={{ color: "#000" }}>Add Client</Nav.Link>
+  <Nav.Link href="/AddEmploye" style={{ color: "#000" }}>Add Employers</Nav.Link>
+  <Nav.Link href="/AddIncome" style={{ color: "#000" }}>Add Income</Nav.Link>
+  <Nav.Link href="/AddExpence" style={{ color: "#000" }}>Add Expense</Nav.Link>
+  <Nav.Link href="/Transition" style={{ color: "#000" }}>Transaction</Nav.Link>
+  <Nav.Link href="/Categories" style={{ color: "#000" }}>Categories</Nav.Link>
+  <Nav.Link href="#" style={{ color: "#000" }} onClick={() => navigate("/Settings")}>
+    Settings
+  </Nav.Link>
+  <hr style={{ borderColor: "#000" }} />
+  <Nav.Link href="#" style={{ color: "#000" }} onClick={() => setShowLogout(true)}>
+    Logout
+  </Nav.Link>
+</Nav>
 
-      {/* Navigation Links */}
-      <Nav className="flex-column gap-2">
-        <Nav.Link href="/Dashboard" className="text-white">
-          Dashboard
-        </Nav.Link>
-        <Nav.Link href="/AddClient" className="text-white">
-          Add Client
-        </Nav.Link>
-        <Nav.Link href="/AddIncome" className="text-white">
-          Add Income
-        </Nav.Link>
-        <Nav.Link href="/AddExpence" className="text-white">
-          Add Expense
-        </Nav.Link>
-        <Nav.Link href="/Transition" className="text-white">
-          Transaction
-        </Nav.Link>
-        <Nav.Link href="/Categories" className="text-white">
-          Categories
-        </Nav.Link>
-        <Nav.Link href="#" className="text-white">
-          Settings
-        </Nav.Link>
-        <hr className="text-light" />
-        <Nav.Link href="#" className="text-white" onClick={() => setShow(true)}>
-          Logout
-        </Nav.Link>
-      </Nav>
 
-      {/* React Bootstrap Modal */}
-      <Modal show={show} onHide={() => setShow(false)} centered>
+      <Modal show={showLogout} onHide={() => setShowLogout(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Confirm Logout</Modal.Title>
         </Modal.Header>
         <Modal.Body>Are you sure you want to log out?</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShow(false)}>
-            No
-          </Button>
-          <Button variant="danger" onClick={handleLogout}>
-            Yes, Logout
-          </Button>
+          <Button variant="secondary" onClick={() => setShowLogout(false)}>No</Button>
+          <Button variant="danger" onClick={handleLogout}>Yes, Logout</Button>
         </Modal.Footer>
       </Modal>
     </div>

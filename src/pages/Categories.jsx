@@ -51,7 +51,12 @@ function Categories() {
 
   return (
     <Container className="py-4">
-      <h2 className="text-center mb-4">Expense Categories</h2>
+      <h2  className="text-center mb-4 fw-bold"
+  style={{
+    background: "linear-gradient(180deg, #ff7409 0%, #ff9f43 90%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  }}>Expense Categories</h2>
 
       {/* Month Filter */}
       <Row className="justify-content-center mb-3">
